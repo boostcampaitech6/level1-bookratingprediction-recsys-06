@@ -1,0 +1,9 @@
+*.csv
+*.bak
+*.img
+*.tar.gz
+
+code/data
+code/log
+code/saved_models
+code/submit
