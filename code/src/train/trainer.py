@@ -41,32 +41,30 @@ def train(args, model, dataloader, logger, setting):
     else:
         pass
     
-    if args.scheduler == 'LAMBDA':
-        scheduler = LambdaLR(optimizer, lrlambda=lambda epoch: 0.65 ** epoch)
-    elif args.scheduler == 'Multiplicative':
-        scheduler = MultiplicativeLR(optimizer, lrlambda=lambda epoch: 0.65 ** epoch)
-    elif args.scheduler == 'Step':
+    if args.lr_scheduler == 'LAMBDA':
+        scheduler = LambdaLR(optimizer, lr_lambda = lambda epoch: 0.95 ** epoch)
+    elif args.lr_scheduler == 'Multiplicative':
+        scheduler = MultiplicativeLR(optimizer, lr_lambda = lambda epoch: 0.95 ** epoch)
+    elif args.lr_scheduler == 'Step':
         scheduler = StepLR(optimizer, stepsize=2, gamma=0.1)
-    elif args.scheduler == 'MultiStep':
+    elif args.lr_scheduler == 'MultiStep':
         scheduler = MultiStepLR(optimizer, milestones=[6,8,9], gamma=0.1)
-    elif args.scheduler == 'Exponential':
+    elif args.lr_scheduler == 'Exponential':
         scheduler = ExponentialLR(optimizer, gamma=0.1)
-    elif args.scheduler == 'CosineAnnealing':
+    elif args.lr_scheduler == 'CosineAnnealing':
         scheduler = CosineAnnealingLR(optimizer, Tmax=10, eta_min=0)
-    elif args.scheduler == 'Cyclic_triangular':
-        scheduler = CyclicLR(optimizer, baselr=0.001, maxlr=0.1, stepsizeup=5, stepsize_down=5, mode="triangular")
-    elif args.scheduler == 'Cyclic_triangular2':
-        scheduler = CyclicLR(optimizer, baselr=0.001, maxlr=0.1, stepsizeup=5, stepsize_down=5, mode="triangular2")
-    elif args.scheduler == 'OneCycle_cos':
+    elif args.lr_scheduler == 'Cyclic_triangular':
+        scheduler = CyclicLR(optimizer, baselr=0.001, maxlr=0.1, stepsizeup=5, stepsize_down=5, mode='triangular')
+    elif args.lr_scheduler == 'Cyclic_triangular2':
+        scheduler = CyclicLR(optimizer, baselr=0.001, maxlr=0.1, stepsizeup=5, stepsize_down=5, mode='triangular2')
+    elif args.lr_scheduler == 'OneCycle_cos':
         scheduler = OneCycleLR(optimizer, maxlr=0.1, stepsperepoch=10, epochs=10, anneal_strategy='cos')
-    elif args.scheduler == 'OneCycle_linear':
+    elif args.lr_scheduler == 'OneCycle_linear':
         scheduler = OneCycleLR(optimizer, maxlr=0.1, stepsperepoch=10, epochs=10, anneal_strategy='linear')
-    elif args.scheduler == 'CosineAnnealingWarmRestarts':
+    elif args.lr_scheduler == 'CosineAnnealingWarmRestarts':
         scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1, eta_min=0.001, last_epoch=-1)
     else:
         pass
-    
-    scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1, eta_min=0.001, last_epoch=-1)
     
     for epoch in tqdm.tqdm(range(args.epochs)):
         model.train()
@@ -85,7 +83,12 @@ def train(args, model, dataloader, logger, setting):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            
+            if args.lr_scheduler is not None :
+                scheduler.step()
+            else :
+                pass
+            
             total_loss += loss.item()
             batch +=1
         valid_loss = valid(args, model, dataloader, loss_fn)
@@ -99,14 +102,19 @@ def train(args, model, dataloader, logger, setting):
             earlystop_cnt += 1
         
         wandb.log({'Train Loss' : total_loss/batch, 'Valid Loss' : valid_loss, 'Best Loss' : minimum_loss})
-        print(f' Epoch : {epoch+1}, Train Loss : {total_loss/batch:.3f}, Valid Loss : {valid_loss:.3f}, LR : {args.lr}, EarlyStop Count : {earlystop_cnt}')
+        print(f'Epoch : {epoch+1}, Train Loss : {total_loss/batch:.3f}, Valid Loss : {valid_loss:.3f}, LR : {optimizer.param_groups[0]["lr"]}, EarlyStop Count : {earlystop_cnt}')
         
         if earlystop_cnt >= args.patience :
-            print(f' Early Stopping. Best Valid_loss : {minimum_loss:.3f}')
+            print(f'Early Stopping. Best Valid_loss : {minimum_loss:.3f}')
             break
+        
+        if (epoch >= 5) & (minimum_loss >= 2.5) :
+            print(f'Pruning.')
+            break
+
     wandb.finish()
     logger.close()
-    return model
+    return model, minimum_loss
         
 
 def valid(args, model, dataloader, loss_fn):
