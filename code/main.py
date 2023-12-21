@@ -121,7 +121,7 @@ if __name__ == "__main__":
     ############### FM, FFM, NCF, WDN, DCN Common OPTION
     arg('--embed_dim', type=int, default=16, help='FM, FFM, NCF, WDN, DCN에서 embedding시킬 차원을 조정할 수 있습니다.')
     arg('--dropout', type=float, default=0.2, help='NCF, WDN, DCN에서 Dropout rate를 조정할 수 있습니다.')
-    arg('--mlp_dims', type=list, default=(16, 16), help='NCF, WDN, DCN에서 MLP Network의 차원을 조정할 수 있습니다.')
+    arg('--mlp_dims', type=(lambda x: [int(item) for item in x.split(',')]), default=(16, 16), help='NCF, WDN, DCN에서 MLP Network의 차원을 조정할 수 있습니다. ex) --mlp_dims "32,32"')
 
 
     ############### DCN

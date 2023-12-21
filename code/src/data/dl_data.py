@@ -22,14 +22,17 @@ def dl_data_load(args):
     test = pd.read_csv(args.data_path + 'test_ratings.csv')
     sub = pd.read_csv(args.data_path + 'sample_submission.csv')
 
-    ids = pd.concat([train['user_id'], sub['user_id']]).unique()
-    isbns = pd.concat([train['isbn'], sub['isbn']]).unique()
+    user_ids = users['user_id'].unique()
+    isbns = books['isbn'].unique()
+    locations = pd.concat([users[i] for i in users.columns if 'location_' in i]).unique() ### location 전부 취합
 
-    idx2user = {idx:id for idx, id in enumerate(ids)}
+    idx2user = {idx:id for idx, id in enumerate(user_ids)}
     idx2isbn = {idx:isbn for idx, isbn in enumerate(isbns)}
+    idx2loc = {idx:ioc for idx, ioc in enumerate(locations)}  ### location to index
 
     user2idx = {id:idx for idx, id in idx2user.items()}
     isbn2idx = {isbn:idx for idx, isbn in idx2isbn.items()}
+    loc2idx = {loc:idx for idx, loc in idx2loc.items()} ### index to location
 
     train['user_id'] = train['user_id'].map(user2idx)
     sub['user_id'] = sub['user_id'].map(user2idx)
@@ -39,8 +42,17 @@ def dl_data_load(args):
     sub['isbn'] = sub['isbn'].map(isbn2idx)
     test['isbn'] = test['isbn'].map(isbn2idx)
 
-    field_dims = np.array([len(user2idx), len(isbn2idx)], dtype=np.uint32)
+    ### loc에 index 적용
+    for df in [train, sub, test]:
+        for column in [x for x in users.columns if 'location_' in x]:
+            df[column] = df[column].map(loc2idx)
 
+    loclen = [len(loc2idx)] * 5 ### loc lens
+    user_rating_count = 5521
+    user_ratings = [11] * 2
+    field_dims = np.array([len(user2idx), len(isbn2idx), *loclen, user_rating_count,*user_ratings], dtype=np.uint32)
+    print(sum(field_dims))
+    
     data = {
             'train':train,
             'test':test.drop(['rating'], axis=1),
@@ -50,8 +62,10 @@ def dl_data_load(args):
             'sub':sub,
             'idx2user':idx2user,
             'idx2isbn':idx2isbn,
+            'idx2loc':idx2loc,
             'user2idx':user2idx,
             'isbn2idx':isbn2idx,
+            'loc2idx':loc2idx,
             }
 
 
