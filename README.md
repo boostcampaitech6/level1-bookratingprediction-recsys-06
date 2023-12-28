@@ -3,11 +3,9 @@
 ## 📌 프로젝트 개요
 ![project_info](./assets/project_info.png)
 
- <span style="background-color:#FFE6E6">책과 관련된 정보</span>와  <span style="background-color:#FFE6E6">소비자의 정보</span>, 그리고  <span style="background-color:#FFE6E6">소비자가 실제로 부여한 평점</span>을 활용하여 <span style="background-color:#FFE6E6">**사용자가 주어진 책에 대해 얼마나 평점을 부여**</span>할지에 대해 예측합니다.
+책과 관련된 정보와 소비자의 정보, 그리고 소비자가 실제로 부여한 평점을 활용하여 **사용자가 주어진 책에 대해 얼마나 평점을 부여**할지에 대해 예측합니다.
 
-해당 경진대회는 소비자들의 책 구매 결정에 대한 도움을 주기 위한 <span style="background-color:#FFE6E6">**개인화된 상품 추천 대회**</span>입니다.
-
-
+해당 경진대회는 소비자들의 책 구매 결정에 대한 도움을 주기 위한 **개인화된 상품 추천 대회**입니다.
 
 ## 🥇 프로젝트 결과
 
@@ -45,12 +43,12 @@
 - 추후에, `Catboost`모델과 앙상블 진행했습니다.
 
 ### 모델 평가 및 개선
-- Optuna를 활용하여 HPO 수행하였습니다.
+- `Optuna`를 활용하여 HPO 수행하였습니다.
 - 다양한 Feature Engineering을 수행하여 모델의 성능을 향상시켰습니다.
 
 ![Public Score Linechart](./assets/leaderboard_chart.png)
 
-## 팀원
+## 🤖 팀원
 <table align="center">
   <tr height="155px">
     <td align="center" width="150px">
